@@ -56,3 +56,25 @@ class SwishActivation(nn.Module):
     def forward(self, x):
 
         return x * torch.sigmoid(self.beta * x)
+
+def equidistant_bias_init(tensor, a, b):
+    """
+    Initializes the bias of a given tensor with equidistant values between a and b.
+    
+    Args:
+    - tensor: The bias tensor to initialize.
+    - a: The starting value of the interval.
+    - b: The ending value of the interval.
+    """
+    # Get the number of elements in the bias tensor
+    num_params = tensor.numel()
+    
+    # Generate equidistant values between a and b
+    equidistant_values = torch.linspace(a, b, num_params)
+    
+    # Assign the equidistant values to the tensor
+    with torch.no_grad():
+        tensor.copy_(equidistant_values)
+
+
+
