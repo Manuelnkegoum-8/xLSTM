@@ -114,26 +114,26 @@ if __name__ == '__main__':
     # Train the model
     best_loss = float('inf')
     torch.autograd.set_detect_anomaly(True)
-
+    start_epoch = -1
+    final_epoch = args.epochs
     if args.resume:
         checkpoint = torch.load('ckpt_lm.pt')
         model.load_state_dict(checkpoint['model_state_dict'])
         optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
         scheduler.load_state_dict(checkpoint['scheduler'])
-        final_epoch = args.epochs
-        num_epochs = final_epoch - (checkpoint['epoch'] + 1)
-
+        start_epoch = checkpoint['epoch']
+    
     print(Fore.LIGHTGREEN_EX+'='*100)
-    print("[INFO] Begin training for {0} epochs".format(num_epochs))
+    print("[INFO] Begin training for {0} epochs".format(final_epoch-start_epoch+1))
     print('='*100+Style.RESET_ALL)
     # Initialize TensorBoard writer
     writer = SummaryWriter('m_lstm_xp')
-    for epoch in range(num_epochs):
+    for epoch in range(start_epoch+1,final_epoch):
         train_loss = train_epoch(model,train_loader,optimizer,scheduler,criterion,scaler,args.amp,device,tokenizer,writer,epoch)
         # Log to TensorBoard
         writer.add_scalar('Loss/Train', train_loss, epoch)
         torch.cuda.empty_cache()
-        if epoch%arrgs.freq==0 or epoch==num_epochs-1:
+        if epoch%args.freq==0 or epoch==args.epochs-1:
             valid_loss = validate(model,val_loader,criterion,device,tokenizer,writer,epoch)
             writer.add_scalar('Loss/Validation', valid_loss, epoch)
             print(f"Epoch: {epoch+1}, Train Loss: {train_loss}, Val Loss: {valid_loss}")
